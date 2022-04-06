@@ -77,55 +77,10 @@ def generate_csv_files(no_folders=-1, last_file=0):
 
 
 # generate files
-generate_csv_files()
-
-
+# generate_csv_files()
 
 
 # 2) ------------ For running the experiment -------------------
-def run_one(file_name):
-    '''Does multiple experiments for different sets of parameters.
-    file name needs to be "VariablesXXXXX.csv"
-    This is similar with run_one.py
-    '''
-
-    def get_list_parameters(file_name):
-        '''We read this variables file and keep it in a dictionary.
-        e.g. file_name = Variables.csv '''
-        global list_parameters
-        with open(file_name, mode='r') as infile:
-            reader = csv.reader(infile)
-            list_parameters = {rows[0]: rows[1] for rows in reader}
-
-        return list_parameters
-
-    list_parameters = get_list_parameters(file_name)
-
-    # TODO: Find out why starting from 9 to -4 and adjust it to my model!
-    no = file_name[9:]
-    no = no[:-4]
-
-    # TODO: Use it for your simulation! Import SingleSimulation
-    # perform the simulation (and also change the name of the current file)
-    s = sim.SingleSimulation(list_parameters)
-    s.get_stats()
-
-    # save simulation results
-    with open('Stats' + no + '.pkl', 'wb') as output:
-        pickle.dump(s, output, pickle.HIGHEST_PROTOCOL)
-
-
-# TODO: This is perfect. Copy it!
-def run_multiple(file_name):
-    '''Runs a simulation for each parmaeter combination file listed in file_name
-    File_name should have multiple lines, each with a "VariablesXXXXX.csv" '''
-
-    file_names = open(file_name, mode='r').readlines()
-    for file_name in file_names:
-        file_name = file_name.rstrip("\n\r")
-        print(file_name)
-        run_one(file_name)
-
 
 def read_stats(file_name):
     ''' reads a .pkl file.'''
