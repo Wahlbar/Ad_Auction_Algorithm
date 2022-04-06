@@ -13,7 +13,7 @@ class SingleSimulation:
 
         self.output = []
 
-    def get_stats(self, show_progress=True):
+    def get_stats(self):
         """Runs the simulation with the given parameters."""
 
         # read simulation parameters

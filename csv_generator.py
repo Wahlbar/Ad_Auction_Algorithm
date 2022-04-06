@@ -16,17 +16,17 @@ import matplotlib.pyplot as plt
 # 1) ------------------- Generating variable files -------------------
 def write_parameters_into_csv(dict_param, no_comb):
     """ Writes a dictionary of parameters to a file indexed by no_comb."""
-    with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\\Data" + str(no_comb) + '.csv',
+    with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\config_files\generated_files\Variables" + str(no_comb) + '.csv',
               'w') as config_log:
         for key in dict_param.keys():
             config_log.write("%s,%s\n" % (key, dict_param[key]))
 
 
 # The functions below create different parameter configurations .csv files
-def generate_csv_files(file_name, no_folders=-1, last_file=0):
+def generate_csv_files(no_folders=-1, last_file=0):
 
-    def read_base_parameters(list_parameters_base={}):
-        infile = open(file_name, mode='r')
+    def read_base_parameters():
+        infile = open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\config_files\base_config.csv", mode='r')
         reader = csv.reader(infile)
         list_parameters_base = {rows[0]: rows[1] for rows in reader}
 
@@ -35,15 +35,13 @@ def generate_csv_files(file_name, no_folders=-1, last_file=0):
     list_parameters_base = read_base_parameters()
 
     dict_changes = {}
-    dict_changes["random_seed"] = [98188, 66162, 13363, 13235, 36248,
-                                   22699, 73828, 8560, 26797, 78100]
+    dict_changes["random_seed"] = [98188, 66162, 13363, 13235, 36248]
     dict_changes["ratio_advertisers"] = [0.1, 0.2, 0.3, 0.4, 0.5,
                                          0.6, 0.7, 0.8, 0.9]
     dict_changes["ratio_sex_users"] = [0.1, 0.2, 0.3, 0.4, 0.5,
                                        0.6, 0.7, 0.8, 0.9]
-    dict_changes["budget"] = [0.01, 0.03, 0.05, 0.07, 0.09,
-                              0.1, 0.3, 0.5, 0.7, 0.9,
-                              1, 3, 5, 7, 9]
+    dict_changes["budget"] = [0.05, 0.07, 0.09,
+                              0.1, 0.3, 0.5]
     dict_changes["ratio_user_advertiser"] = [10, 100, 1000]
     dict_changes["advertiser_size"] = [10, 100, 100]
     names_basic = list(dict_changes.keys())
@@ -65,7 +63,7 @@ def generate_csv_files(file_name, no_folders=-1, last_file=0):
             write_parameters_into_csv(list_parameters, no_comb)
 
         return no_comb
-
+    all_basic(0, list_parameters_base)
     no_comb = last_file
 
     # ---change the file_names.txt to have all the above files
@@ -76,6 +74,12 @@ def generate_csv_files(file_name, no_folders=-1, last_file=0):
                 f.writelines(('Variables' + str(j + 1) + '.csv\n'))
 
     return no_comb
+
+
+# generate files
+generate_csv_files()
+
+
 
 
 # 2) ------------ For running the experiment -------------------
