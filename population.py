@@ -1,4 +1,4 @@
-import numpy as np
+
 
 # TODO: Maybe put into csv later on!
 # Right now generated from the swiss population -> maybe generate from the swiss social media users?

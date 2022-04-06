@@ -8,30 +8,27 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Code from Stefania Ionescu
 
 # This file was used for:
 #  1) generating different parameter configurations
 #  2) running multiple simulations at once
 
 # 1) ------------------- Generating variable files -------------------
-def write_parameters(dict_param, no_comb):
-    ''' Writes a dictionary of parameters to a file indexed by no_comb.
-    '''
-    with open('Variables' + str(no_comb) + '.csv', 'w') as f:
+def write_parameters_into_csv(dict_param, no_comb):
+    """ Writes a dictionary of parameters to a file indexed by no_comb."""
+    with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\\Data" + str(no_comb) + '.csv',
+              'w') as config_log:
         for key in dict_param.keys():
-            f.write("%s,%s\n" % (key, dict_param[key]))
+            config_log.write("%s,%s\n" % (key, dict_param[key]))
+
 
 # The functions below create different parameter configurations .csv files
 def generate_csv_files(file_name, no_folders=-1, last_file=0):
-    '''Similarly as above, generates multiple variables csv files'''
 
     def read_base_parameters(list_parameters_base={}):
         infile = open(file_name, mode='r')
         reader = csv.reader(infile)
         list_parameters_base = {rows[0]: rows[1] for rows in reader}
-        # list_parameters_base["orientation_types"] = '"[0, 1]"'
-        # list_parameters_base["prob_types"] = '"[0.5, 0.5]"'
 
         return list_parameters_base
 
@@ -40,55 +37,46 @@ def generate_csv_files(file_name, no_folders=-1, last_file=0):
     dict_changes = {}
     dict_changes["random_seed"] = [98188, 66162, 13363, 13235, 36248,
                                    22699, 73828, 8560, 26797, 78100]
-    # dict_changes["filter"] = ["OFF", "WEAK", "STRONG", "non_bias_WEAK", "non_bias_STRONG"]
-    # dict_changes["norm_intervention"] = ["0", "1"]
+    dict_changes["ratio_advertisers"] = [0.1, 0.2, 0.3, 0.4, 0.5,
+                                         0.6, 0.7, 0.8, 0.9]
+    dict_changes["ratio_sex_users"] = [0.1, 0.2, 0.3, 0.4, 0.5,
+                                       0.6, 0.7, 0.8, 0.9]
+    dict_changes["budget"] = [0.01, 0.03, 0.05, 0.07, 0.09,
+                              0.1, 0.3, 0.5, 0.7, 0.9,
+                              1, 3, 5, 7, 9]
+    dict_changes["ratio_user_advertiser"] = [10, 100, 1000]
+    dict_changes["advertiser_size"] = [10, 100, 100]
     names_basic = list(dict_changes.keys())
 
     def all_basic(no_comb, list_parameters):
         # itertools.product: combines all inputs with each others!
-        # TODO: Change the dict_changes to my variables!
         for comb in itertools.product(dict_changes["random_seed"],
-                                      dict_changes["filter"],
-                                      dict_changes["norm_intervention"]):
+                                      dict_changes["ratio_advertisers"],
+                                      dict_changes["ratio_sex_users"],
+                                      dict_changes["budget"],
+                                      dict_changes["ratio_user_advertiser"],
+                                      dict_changes["advertiser_size"]):
             # --1-- change the basic parameters
             for k in range(len(names_basic)):
                 list_parameters[names_basic[k]] = comb[k]
 
             # write a new file
             no_comb += 1
-            write_parameters(list_parameters, no_comb)
+            write_parameters_into_csv(list_parameters, no_comb)
 
         return no_comb
 
     no_comb = last_file
-    # TODO: Change to own correlation. Here: beta = correlation level between the bias and non-bias attributes, gamma = correlation level between the value of matching and competing attributes
-    attr_params = ['beta', 'gamma']
-    combs = [['0.8', '0.6'], ['0', '0.6'], ['0.4', '0.6'], ['0.6', '0.6']]
-    for c in combs:
-        for i in range(2):
-            list_parameters_base[attr_params[i]] = c[i]
-        no_comb = all_basic(no_comb, list_parameters_base)
-
-    list_parameters_base = read_base_parameters()
-
-    attr_params = ['no_matching_searchable', 'no_matching_experiential',
-                   'no_competing_searchable', 'no_competing_experiential']
-    combs = [['1', '1', '1', '2'], ['1', '1', '2', '1'], ['1', '2', '1', '1'], ['2', '1', '1', '1']]
-    combs += [['1', '1', '2', '2'], ['1', '2', '2', '1'], ['2', '2', '1', '1'],
-              ['2', '1', '1', '2'], ['2', '1', '2', '1'], ['1', '2', '1', '2']]
-    for c in combs:
-        for i in range(4):
-            list_parameters_base[attr_params[i]] = c[i]
-        no_comb = all_basic(no_comb, list_parameters_base)
 
     # ---change the file_names.txt to have all the above files
     for i in range(no_folders):
-        f = open("file_names" + str(i+1) + ".txt", mode='w')
+        f = open("file_names" + str(i + 1) + ".txt", mode='w')
         for j in range(last_file, no_comb):
             if j % no_folders == i:
-                f.writelines(('Variables' + str(j+1) + '.csv\n'))
+                f.writelines(('Variables' + str(j + 1) + '.csv\n'))
 
     return no_comb
+
 
 # 2) ------------ For running the experiment -------------------
 def run_one(file_name):
@@ -122,6 +110,7 @@ def run_one(file_name):
     with open('Stats' + no + '.pkl', 'wb') as output:
         pickle.dump(s, output, pickle.HIGHEST_PROTOCOL)
 
+
 # TODO: This is perfect. Copy it!
 def run_multiple(file_name):
     '''Runs a simulation for each parmaeter combination file listed in file_name
@@ -139,6 +128,7 @@ def read_stats(file_name):
     with open(file_name, 'rb') as input:
         s = pickle.load(input)
         return s
+
 
 # TODO: Maybe useful
 def make_simulations(list_stats_no, criteria='NONE', stats_no_param={}):
@@ -168,30 +158,6 @@ def make_simulations(list_stats_no, criteria='NONE', stats_no_param={}):
                     sims.append(s)
     return sim.Simulations(sims)
 
-# TODO: Maybe useful
-def changing_file(no_stats, start=1):
-    '''Makes a .csv file with the changing parameters.
-    Returns a dictionary {no_stats: {dict_parameters}}'''
-
-    list_stats_no = range(start, start + no_stats)
-    sims = make_simulations(list_stats_no)
-
-    def write_parameters(dict_param):
-        with open('Changing.csv', 'w') as f:
-            f.write("Variable name, Options, Choice for plotting\n")
-            for key in dict_param.keys():
-                f.write('%s,"%s"\n' % (key, dict_param[key]))
-    write_parameters(sims.identify_changing_parameters())
-
-    # make the dictionary of statistics parameters
-    stats_no_param = {}
-    for no in list_stats_no:
-        file_name = 'Stats' + str(no) + '.pkl'
-        if path.exists(file_name):
-            with open(file_name, 'rb') as input:
-                s = pickle.load(input)
-                stats_no_param[no] = s.parameters
-    return stats_no_param
 
 # TODO: Useful adjust plotting
 def plot(no_stats, start=1, hand_filter=False, file_name='NONE', stats_no_param={}):
@@ -227,6 +193,8 @@ generate a .csv file with the changing parameters
 2. modify it to have the values you want to plot
 3. ve.plot(499000, file_name = "Changing.csv", stats_no_param=stats_no_param)
 '''
+
+
 # TODO: Stopped here
 
 def make_json(list_stats_no):
@@ -236,7 +204,7 @@ def make_json(list_stats_no):
     sims_dict = {}
     for no in list_stats_no:
         file_name = 'Stats' + str(no) + '.pkl'
-        if(no % 1000 == 0):
+        if (no % 1000 == 0):
             print(no)
         if path.exists(file_name):
             # TODO: Change the names, such that it matches my naming!
@@ -330,8 +298,8 @@ def plot_hit_new(df):
     import seaborn as sns
     import pandas as pd
 
-    #df = pd.read_csv(file_name)
-    has_2_attr = abs(df['no_matching_searchable']-0)+abs(df['no_competing_searchable']-1) == 0
+    # df = pd.read_csv(file_name)
+    has_2_attr = abs(df['no_matching_searchable'] - 0) + abs(df['no_competing_searchable'] - 1) == 0
     df_2 = df[has_2_attr]
     fig = sns.catplot(x="filter", y="percentage_outgroup_long_term",
                       hue="norm_intervention", kind="bar", data=df_2,
@@ -353,7 +321,7 @@ def plot_hit_new(df):
     for t, l in zip(fig._legend.texts, new_labels):
         t.set_text(l)
 
-    #plt.legend(loc='best', title='Norm intervention')
+    # plt.legend(loc='best', title='Norm intervention')
 
     plt.show()
 
@@ -421,12 +389,12 @@ def plot_histogram(dictionary_results_without, dictionary_results_with, x_labels
     width = 0.3  # the width of the bars
 
     fig, ax = plt.subplots(figsize=(18, 5))
-    rects1 = ax.bar(x - width, list_0, width-0.01, label='Norm intervention', color='r', alpha=0.7)
-    rects2 = ax.bar(x, list_1, width-0.01, color='r', alpha=0.7)
-    rects3 = ax.bar(x + width, list_2, width-0.01, color='r', alpha=0.7)
-    rects1_1 = ax.bar(x - width, list_0_1, width-0.01, label=query_terms[0])
-    rects2_1 = ax.bar(x, list_1_1, width-0.01, label=query_terms[1])
-    rects3_1 = ax.bar(x + width, list_2_1, width-0.01, label=query_terms[2])
+    rects1 = ax.bar(x - width, list_0, width - 0.01, label='Norm intervention', color='r', alpha=0.7)
+    rects2 = ax.bar(x, list_1, width - 0.01, color='r', alpha=0.7)
+    rects3 = ax.bar(x + width, list_2, width - 0.01, color='r', alpha=0.7)
+    rects1_1 = ax.bar(x - width, list_0_1, width - 0.01, label=query_terms[0])
+    rects2_1 = ax.bar(x, list_1_1, width - 0.01, label=query_terms[1])
+    rects3_1 = ax.bar(x + width, list_2_1, width - 0.01, label=query_terms[2])
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Number of non-bias attributes')
@@ -435,10 +403,10 @@ def plot_histogram(dictionary_results_without, dictionary_results_with, x_labels
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.autoscale()
-    xmin = -2*width
-    xmax = max(np.arange(len(labels)))+2*width
+    xmin = -2 * width
+    xmax = max(np.arange(len(labels))) + 2 * width
     ymin = 0
-    ymax = max(list_0+list_1+list_2)*1.1
+    ymax = max(list_0 + list_1 + list_2) * 1.1
     ax.set(xlim=(xmin, xmax), ylim=(ymin, ymax))
     ax.legend(loc='best')
 
@@ -475,15 +443,15 @@ def check_stats(sim):
     sd = st.no_second_date
     print('Drop after first date:')
     drop = sd['total'] / fd['total']
-    print('   rate ',  drop, ': from ', fd['total'], ' to ', sd['total'])
+    print('   rate ', drop, ': from ', fd['total'], ' to ', sd['total'])
     out_group_drop = sd['out-group'] / fd['out-group']
-    print('   out-group rate ',  out_group_drop, ': from ',
+    print('   out-group rate ', out_group_drop, ': from ',
           fd['out-group'], ' to ', sd['out-group'])
 
     # percentage out-group
     no_lt = st.no_long_term[-1]
     no_oglt = st.no_outgroup_long_term[-1]
-    print('\nPercentage out-group long-term: ', no_oglt/no_lt, no_oglt, no_lt)
+    print('\nPercentage out-group long-term: ', no_oglt / no_lt, no_oglt, no_lt)
 
     # exit-reason, time by state, who in olt
     print('\nExit reason\n', st.exit_reason)
