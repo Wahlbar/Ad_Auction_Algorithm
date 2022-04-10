@@ -5,13 +5,13 @@ import pandas as pd
 import os
 
 
-def ad_per_sex_bar_plot(data_frame):
-    figure = sns.catplot(
+def ad_per_sex_bar_plot(data_frame, no):
+    sns.catplot(
         data=data_frame, kind="bar",
         x="type", y="absolute", hue="sex",
         ci="sd", palette="dark", alpha=.6, height=6
     )
-    plt.show()
+    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph\catplot" + str(no) + ".jpg")
     return
 
 
@@ -31,8 +31,8 @@ def draw_multiple():
         print("Graph: ", i+1)
         with open(dir_path + r"\Data" + str(i+1) + ".csv",
                   'r') as document:
-            ad_per_sex_bar_plot(document)
-
+            data_frame = pd.read_csv(document)
+            ad_per_sex_bar_plot(data_frame, i+1)
     return
 
 
