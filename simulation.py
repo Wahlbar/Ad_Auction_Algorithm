@@ -1,6 +1,5 @@
 import numpy as np
 import auction
-import graph
 
 
 class SingleSimulation:
@@ -11,44 +10,90 @@ class SingleSimulation:
         # Save the parameters to pass it to the individual classes!
         self.parameters = list_parameters
 
-        self.output = []
 
     def get_stats(self):
         """Runs the simulation with the given parameters."""
 
         # read simulation parameters
-        random_seed = int(self.parameters['random_seed'])
+        random_seed = [98188, 66162, 13363, 13235, 36248]
+        result = []
 
-        np.random.seed(random_seed)
+        # iterate through the seeds
+        for seed in random_seed:
+            np.random.seed(seed)
+            print("Seed", seed)
+            # generate a new auction
+            single_auction = auction.Auction(self.parameters)
+            single_auction.generate_users(single_auction.user_size)
+            single_auction.generate_advertisers(single_auction.advertiser_size)
+            single_auction.auctioning()
 
-        # generate a new auction
-        single_auction = auction.Auction(self.parameters)
-        single_auction.generate_users(single_auction.user_size)
-        single_auction.generate_advertisers(single_auction.advertiser_size)
-        single_auction.auctioning()
+            # update the statistics
+            # [no male, no female, no retail advertiser, no economic advertiser,
+            # no retailer ads total, no economic ads total,
+            # no retail ads male, no retail ads female, no economic ads male, no economic ads female,
+            # average position male retail, average position male economic, average position female retail, average position female economic,
+            # platform revenue]
+            percentage_retail_ads_male = 0
+            if single_auction.no_retail_ads_total != 0:
+                percentage_retail_ads_male = single_auction.no_retail_ads_male/single_auction.no_retail_ads_total
 
-        # update the statistics
-        self.output.append(["no male", single_auction.no_male])
-        self.output.append(["no female", single_auction.no_female])
-        self.output.append(["no retailer", single_auction.no_retailer])
-        self.output.append(["no economic", single_auction.no_economic])
+            per_user_retail_ads_male = 0
+            if single_auction.no_male != 0:
+                per_user_retail_ads_male = single_auction.no_retail_ads_male/single_auction.no_male
 
-        self.output.append(["no retail ads male", single_auction.no_retail_ads_male])
-        self.output.append(["no retail ads female", single_auction.no_retail_ads_female])
-        self.output.append(["no economic ads male", single_auction.no_economic_ads_male])
-        self.output.append(["no economic ads female", single_auction.no_economic_ads_female])
+            result.append(["male", single_auction.no_retail_ads_male, percentage_retail_ads_male,
+                           per_user_retail_ads_male, "retailer", single_auction.avg_position_retail_male,
+                           single_auction.no_male, single_auction.no_female, single_auction.no_retailer, single_auction.no_economic, single_auction.platform_revenue[0],
+                           [self.parameters["ratio_sex_users"], self.parameters["ratio_advertisers"], self.parameters["budget"],
+                            self.parameters["ratio_user_advertiser"], self.parameters["advertiser_size"]]])
 
-        self.output.append(["average position male retail", single_auction.avg_position_retail_male])
-        self.output.append(["average position male economic", single_auction.avg_position_economic_male])
-        self.output.append(["average position female retail", single_auction.avg_position_retail_female])
-        self.output.append(["average position female economic", single_auction.avg_position_economic_female])
+            percentage_retail_ads_female = 0
+            if single_auction.no_retail_ads_total != 0:
+                percentage_retail_ads_female = single_auction.no_retail_ads_female/single_auction.no_retail_ads_total
 
-        self.output.append(["platform revenue", single_auction.platform_revenue[0]])
+            per_user_retail_ads_female = 0
+            if single_auction.no_female != 0:
+                per_user_retail_ads_female = single_auction.no_retail_ads_female/single_auction.no_female
 
-        # TODO: Save solutions into a csv format and open it with seafile?
-        self.generate_graph(single_auction.no_retail_ads_male, single_auction.no_retail_ads_female, single_auction.no_economic_ads_male, single_auction.no_economic_ads_female)
+            result.append(["female", single_auction.no_retail_ads_female, percentage_retail_ads_female,
+                           per_user_retail_ads_female, "retailer", single_auction.avg_position_retail_female])
 
-    def generate_graph(self, no_retail_ads_male, no_retail_ads_female, no_economic_ads_male, no_economic_ads_female):
+            percentage_economic_ads_male = 0
+            if single_auction.no_economic_ads_total != 0:
+                percentage_economic_ads_male = single_auction.no_economic_ads_male/single_auction.no_economic_ads_total
 
-        # TODO: Generate Graph!
-        graph.Graph.draw_ad_per_sex_hist(graph, no_retail_ads_male, no_retail_ads_female, no_economic_ads_male, no_economic_ads_female, )
+            per_user_economic_ads_male = 0
+            if single_auction.no_male != 0:
+                per_user_economic_ads_male = single_auction.no_economic_ads_male/single_auction.no_male
+
+            result.append(["male", single_auction.no_economic_ads_male, percentage_economic_ads_male,
+                           per_user_economic_ads_male, "economic", single_auction.avg_position_economic_male])
+
+            percentage_economic_ads_female = 0
+            if single_auction.no_economic_ads_total != 0:
+                percentage_economic_ads_female = single_auction.no_economic_ads_female/single_auction.no_economic_ads_total
+
+            per_user_economic_ads_female = 0
+            if single_auction.no_female != 0:
+                per_user_economic_ads_female = single_auction.no_economic_ads_male/single_auction.no_female
+
+            result.append(["female", single_auction.no_economic_ads_female, percentage_economic_ads_female,
+                           per_user_economic_ads_female, "economic", single_auction.avg_position_economic_female])
+
+
+        return result
+
+        # # TODO: Save solutions into a csv format and open it with seafile?
+        # self.generate_graph(single_auction.no_retail_ads_male, single_auction.no_retail_ads_female, single_auction.no_economic_ads_male, single_auction.no_economic_ads_female)
+
+    # def generate_graph(self, no_retail_ads_male, no_retail_ads_female, no_economic_ads_male, no_economic_ads_female):
+    #
+    #     # TODO: Generate Graph!
+    #     graph.Graph.draw_ad_per_sex_hist(graph, no_retail_ads_male, no_retail_ads_female, no_economic_ads_male, no_economic_ads_female, )
+
+
+def write_header():
+    header = ["sex", "absolute", "percentage", "ratio per user", "type", "avg position",
+              "no_male", "no_female", "no_retailer", "no_economic", "platform revenue", "settings"]
+    return header

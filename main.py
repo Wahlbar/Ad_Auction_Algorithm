@@ -21,17 +21,9 @@ def run_one_file(number):
 
     # get parameters from variable file
     list_parameters = get_list_parameters(number)
-    print("Variables" + str(number))
-# initialise simulation for these parameters
+    # initialise simulation for these parameters
     simulation = sim.SingleSimulation(list_parameters)
-    simulation.get_stats()
-
-    with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Data" + str(number) + '.csv',
-              'w') as output:
-        write = csv.writer(output)
-        write.writerows(simulation.output)
-        for key, value in list_parameters.items():
-            write.writerow([key, value])
+    return simulation.get_stats()
 
 
 def run_multiple():
@@ -46,10 +38,17 @@ def run_multiple():
         if os.path.isfile(os.path.join(dir_path, path)):
             count += 1
 
+    count = 2
+
     for i in range(count):
-        run_one_file(i+1)
+        print("Simulation: ", i+1)
+        simulation = run_one_file(i+1)
+        with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Data" + str(i+1) + ".csv",
+                  'w') as output:
+            write = csv.writer(output)
+            write.writerow(sim.write_header())
+            for j in range(len(simulation)):
+                write.writerow(simulation[j])
 
 
-run_one_file(10000)
-
-#run_multiple()
+run_multiple()
