@@ -10,6 +10,8 @@ class Auction:
         self.parameters = list_parameters
         self.users = []
         self.advertisers = []
+        self.sorted_advertiser_by_bid = []
+
         self.slots_per_user = int(self.parameters['slots_per_user'])
         self.advertiser_size = int(self.parameters['advertiser_size'])
         self.ratio_user_advertiser = int(self.parameters['ratio_user_advertiser'])
@@ -87,15 +89,15 @@ class Auction:
             # Check if there are no advertisers able to bid anymore and break if so.
             if not self.advertisers:
                 break
-            sorted_advertiser_by_bid = sorted(self.advertisers, key=lambda adv: adv.bid, reverse=True)
-            winning_advertisers = sorted_advertiser_by_bid[:self.slots_per_user]
+            self.sorted_advertiser_by_bid = sorted(self.advertisers, key=lambda adv: adv.bid, reverse=True)
+            winning_advertisers = self.sorted_advertiser_by_bid[:self.slots_per_user]
 
             # 3. For each winner get the position of the next advertiser and pay its bid to the platform.
             second_price_index = 1
             for current_advertiser in winning_advertisers:
 
-                if second_price_index < len(sorted_advertiser_by_bid):
-                    next_advertiser = sorted_advertiser_by_bid[second_price_index] # TODO: @Stefania: What does the last advertiser pay?
+                if second_price_index < len(self.sorted_advertiser_by_bid):
+                    next_advertiser = self.sorted_advertiser_by_bid[second_price_index] # TODO: @Stefania: What does the last advertiser pay?
                     cost = next_advertiser.bid
                 else:
                     cost = np.random.uniform(0, current_advertiser.bid)

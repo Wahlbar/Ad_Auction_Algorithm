@@ -19,7 +19,7 @@ def draw_multiple():
     """Runs a simulation for each parameter combination file listed in file_name
     File_name should have multiple lines, each with a "VariablesXXXXX.csv" """
     # folder path
-    dir_path = r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results"
+    dir_path = r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV"
     count = 0
     # Iterate directory
     for path in os.listdir(dir_path):
@@ -29,10 +29,9 @@ def draw_multiple():
 
     for i in range(count):
         print("Graph: ", i+1)
-        with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Data" + str(i+1) + ".csv",
-                  'w') as document:
-            data_frame = pd.read_csv(document)
-            ad_per_sex_bar_plot(data_frame)
+        with open(dir_path + r"\Data" + str(i+1) + ".csv",
+                  'r') as document:
+            ad_per_sex_bar_plot(document)
 
     return
 

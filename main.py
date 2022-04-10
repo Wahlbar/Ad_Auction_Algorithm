@@ -43,7 +43,7 @@ def run_multiple():
     for i in range(count):
         print("Simulation: ", i+1)
         simulation = run_one_file(i+1)
-        with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Data" + str(i+1) + ".csv",
+        with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\Data" + str(i+1) + ".csv",
                   'w') as output:
             write = csv.writer(output)
             write.writerow(sim.write_header())
