@@ -38,7 +38,7 @@ def run_multiple():
         if os.path.isfile(os.path.join(dir_path, path)):
             count += 1
 
-    count = 2
+    count = 1
 
     for i in range(count):
         print("Simulation: ", i+1)
@@ -50,5 +50,6 @@ def run_multiple():
             for j in range(len(simulation)):
                 write.writerow(simulation[j])
 
+# run big simulations only for one set of parameters and then say that there are no significant differences.
 
 run_multiple()

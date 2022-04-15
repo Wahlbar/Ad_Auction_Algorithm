@@ -32,7 +32,7 @@ class User:
         # TODO: To test dependencies of the different attributes use correlation between
         # TODO: @Stefania: Is this a good way to estimate the users' click through rates?
         # Average click through rate on Google 3.17% -> Does the click through rate differ in the bidding algorithm based on sex or only on position?
-        self.click_through_rate = stats.truncnorm.rvs(0, 1, loc=mu_click_through_rate, scale=sigma_click_through_rate, size=1)  # TODO: Read into click through rate! Different for every user but static? Or different for every position and static?
+        self.true_click_probability = stats.truncnorm.rvs(0, 1, loc=mu_click_through_rate, scale=sigma_click_through_rate, size=1)  # TODO: Read into click through rate! Different for every user but static? Or different for every position and static?
         # if self.sex == "f":
         #     # From Nasr and Tschanz: female = 1.71%
         #     self.click_through_rate = stats.truncnorm.rvs(0, 1, loc=0.0171, scale=0.005, size=1)

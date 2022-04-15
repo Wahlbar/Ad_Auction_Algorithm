@@ -5,13 +5,62 @@ import pandas as pd
 import os
 
 
-def ad_per_sex_bar_plot(data_frame, no):
-    sns.catplot(
+def ad_per_sex_bar_plot_absolute(data_frame, no):
+    ratio_sex_users = int(data_frame["ratio_sex_users"].values[0] * 100)
+    ratio_advertisers = int(data_frame["ratio_advertisers"].values[0] * 100)
+    budget = int(data_frame["budget"].values[0])
+    advertiser_size = int(data_frame["advertiser_size"].values[0])
+    user_size = int(data_frame["ratio_user_advertiser"].values[0]) * advertiser_size
+
+    figure = sns.catplot(
         data=data_frame, kind="bar",
         x="type", y="absolute", hue="sex",
         ci="sd", palette="dark", alpha=.6, height=6
     )
-    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph\catplot" + str(no) + ".jpg")
+
+    (figure.set_axis_labels("Advertiser Type", "Number of Slots Won")
+     .set_xticklabels(["Retail", "Economic Opportunity"]))
+    # plt.title("Absolute number of retail and economic ads shown to male and female users")
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    plt.gcf().text(0.9, 0.1, "female to male ratio: " + str(ratio_sex_users) + "%\n"
+                             "retailer to economic opportunity ratio: " + str(ratio_advertisers) + "%\n"
+                             "advertiser size: " + str(advertiser_size) + "\n"
+                             "user size: " + str(user_size) + "\n"
+                             "budget: " + str(budget) + "\n", fontsize=10, bbox=props)
+
+    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph\catplot_absolute" + str(
+        no) + ".jpg", bbox_inches='tight')
+    plt.close()
+    return
+
+
+def ad_per_sex_bar_plot_percentage(data_frame, no):
+    ratio_sex_users = int(data_frame["ratio_sex_users"].values[0] * 100)
+    ratio_advertisers = int(data_frame["ratio_advertisers"].values[0] * 100)
+    budget = int(data_frame["budget"].values[0])
+    advertiser_size = int(data_frame["advertiser_size"].values[0])
+    user_size = int(data_frame["ratio_user_advertiser"].values[0]) * advertiser_size
+
+    figure = sns.catplot(
+        data=data_frame, kind="bar",
+        x="type", y="percentage", hue="sex",
+        ci="sd", palette="dark", alpha=.6, height=6, legend_out=True)
+
+    (figure.set_axis_labels("Advertiser Type", "Percentage of Auctions Won")
+     .set_xticklabels(["Retail", "Economic Opportunity"])
+     .set(ylim=(0, 1)))
+    # plt.title("Percentage of retail and economic ads shown to male and female users")
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    plt.gcf().text(0.9, 0.1, "female to male ratio: " + str(ratio_sex_users) + "%\n"
+                             "retailer to economic opportunity ratio: " + str(ratio_advertisers) + "%\n"
+                             "advertiser size: " + str(advertiser_size) + "\n"
+                             "user size: " + str(user_size) + "\n"
+                             "budget: " + str(budget) + "\n", fontsize=10, bbox=props)
+
+    # plt.show()
+    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph\catplot_percentage" + str(
+        no) + ".jpg", bbox_inches='tight')
+    plt.close()
     return
 
 
@@ -27,12 +76,14 @@ def draw_multiple():
         if os.path.isfile(os.path.join(dir_path, path)):
             count += 1
 
+    count = 1
     for i in range(count):
-        print("Graph: ", i+1)
-        with open(dir_path + r"\Data" + str(i+1) + ".csv",
+        print("Graph: ", i + 1)
+        with open(dir_path + r"\Data" + str(i + 1) + ".csv",
                   'r') as document:
             data_frame = pd.read_csv(document)
-            ad_per_sex_bar_plot(data_frame, i+1)
+            ad_per_sex_bar_plot_absolute(data_frame, i + 1)
+            ad_per_sex_bar_plot_percentage(data_frame, i + 1)
     return
 
 

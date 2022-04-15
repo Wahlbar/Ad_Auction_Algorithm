@@ -28,23 +28,20 @@ def generate_csv_files(no_folders=-1, last_file=0):
     list_parameters_base = read_base_parameters()
 
     dict_changes = {}
-    dict_changes["ratio_advertisers"] = [0.1, 0.2, 0.3, 0.4, 0.5,
-                                         0.6, 0.7, 0.8, 0.9]
-    dict_changes["ratio_sex_users"] = [0.1, 0.2, 0.3, 0.4, 0.5,
-                                       0.6, 0.7, 0.8, 0.9]
-    dict_changes["budget"] = [0.05, 0.07, 0.09,
-                              0.1, 0.3, 0.5]
-    dict_changes["ratio_user_advertiser"] = [10, 100, 1000]
-    dict_changes["advertiser_size"] = [10, 100, 1000]
+    dict_changes["ratio_user_advertiser"] = [100, 10]
+    dict_changes["advertiser_size"] = [100, 10]
+    dict_changes["ratio_advertisers"] = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+    dict_changes["ratio_sex_users"] = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.1, 0.9]
+    dict_changes["budget"] = [100, 1000, 10000]
     names_basic = list(dict_changes.keys())
 
     def all_basic(no_comb, list_parameters):
         # itertools.product: combines all inputs with each others!
-        for comb in itertools.product(dict_changes["ratio_advertisers"],
+        for comb in itertools.product(dict_changes["ratio_user_advertiser"],
+                                      dict_changes["advertiser_size"],
+                                      dict_changes["ratio_advertisers"],
                                       dict_changes["ratio_sex_users"],
-                                      dict_changes["budget"],
-                                      dict_changes["ratio_user_advertiser"],
-                                      dict_changes["advertiser_size"]):
+                                      dict_changes["budget"]):
 
             # --1-- change the basic parameters
             for k in range(len(names_basic)):

@@ -10,12 +10,15 @@ class Auction:
         self.parameters = list_parameters
         self.users = []
         self.advertisers = []
-        self.sorted_advertiser_by_bid = []
+        self.sorted_advertiser_by_estimated_value = []
 
         self.slots_per_user = int(self.parameters['slots_per_user'])
         self.advertiser_size = int(self.parameters['advertiser_size'])
         self.ratio_user_advertiser = int(self.parameters['ratio_user_advertiser'])
         self.user_size = self.ratio_user_advertiser * self.advertiser_size
+
+        self.position_effects = []
+        self.calculate_position_effects()
 
         # number of retailer and economic opportunity advertisers at each iteration
         self.no_retail_ads_total = 0
@@ -51,6 +54,12 @@ class Auction:
         # platform revenue
         self.platform_revenue = 0
 
+        # truthful platform revenue
+        self.truthful_platform_revenue = 0
+
+        # reserve price TODO: Argue why!
+        self.reserve_price = 0.5
+
     # Generate the users for the auction.
     def generate_users(self, no_users):
         for i in range(no_users):
@@ -60,6 +69,10 @@ class Auction:
     def generate_advertisers(self, no_advertisers):
         for i in range(no_advertisers):
             self.advertisers.append(advertiser.Advertiser(self.parameters))
+
+    def calculate_position_effects(self):
+        for i in range(self.slots_per_user):
+            self.position_effects.append((self.slots_per_user - i)/self.slots_per_user)
 
     def auctioning(self):
         """
@@ -79,9 +92,9 @@ class Auction:
 
             # 1.
             for current_advertiser in self.advertisers:
-                current_advertiser.gsp_bidding(current_user)
+                current_advertiser.gsp_truthful_bidding(current_user)
                 # If the advertiser is sold out, remove him from the bid
-                if current_advertiser.bid == 0:
+                if current_advertiser.estimated_value == 0:
                     self.advertisers.remove(current_advertiser)
             # Breaking ties is not very important since the probability of getting two similar numbers is very low due to the continuous space.
             # Here the ties are not broken randomly.
@@ -89,20 +102,29 @@ class Auction:
             # Check if there are no advertisers able to bid anymore and break if so.
             if not self.advertisers:
                 break
-            self.sorted_advertiser_by_bid = sorted(self.advertisers, key=lambda adv: adv.bid, reverse=True)
-            winning_advertisers = self.sorted_advertiser_by_bid[:self.slots_per_user]
+            self.sorted_advertiser_by_estimated_value = sorted(self.advertisers, key=lambda adv: adv.estimated_value, reverse=True)
+            winning_advertisers = self.sorted_advertiser_by_estimated_value[:self.slots_per_user]
+
+            # remove advertiser with a too low estimated_value from the winning list
+            for current_advertiser in winning_advertisers:
+                # remove advertiser with a too low estimated_value
+                if current_advertiser.estimated_value < self.reserve_price:
+                    winning_advertisers.remove(current_advertiser)
+
+            # Calculate the envy free bids
+            envy_free_bids = self.calculate_utilities(winning_advertisers, self.reserve_price)
 
             # 3. For each winner get the position of the next advertiser and pay its bid to the platform.
+            # Run it once with truthful bidding and once with the strategized bidding. 
             second_price_index = 1
-            for current_advertiser in winning_advertisers:
-
-                if second_price_index < len(self.sorted_advertiser_by_bid):
-                    next_advertiser = self.sorted_advertiser_by_bid[second_price_index] # TODO: @Stefania: What does the last advertiser pay?
-                    cost = next_advertiser.bid
+            for bid in envy_free_bids:
+                if second_price_index < len(envy_free_bids):
+                    next_bid = envy_free_bids[second_price_index]
+                    cost = next_bid
                 else:
-                    cost = np.random.uniform(0, current_advertiser.bid)
+                    cost = self.reserve_price
                 self.platform_revenue += cost
-                current_advertiser.pay(next_advertiser.bid)
+                winning_advertisers[envy_free_bids.index(bid)].pay(cost)
                 second_price_index += 1
 
             # 4.
@@ -136,26 +158,48 @@ class Auction:
                     self.no_economic_ads_total += 1
                     self.sum_position_economic_female += winning_advertisers.index(current_advertiser)
 
+# WORKS!
+    def calculate_utilities(self, winning_advertisers, min_price):
+        maximized_utilities = []
+        for current_advertiser in reversed(winning_advertisers):
+            position_index = winning_advertisers.index(current_advertiser)
+            if position_index == len(winning_advertisers) - 1:
+                next_lower_bid = min_price
+            else:
+                next_advertiser = winning_advertisers[position_index+1]
+                next_lower_bid = next_advertiser.bid
+            print("true value", current_advertiser.estimated_value)
+            print("next lower bid", next_lower_bid)
+            if position_index == 0:
+                best_bid = current_advertiser.estimated_value
+            else:
+                best_bid = current_advertiser.estimated_value - (self.position_effects[position_index]/self.position_effects[position_index-1] * (current_advertiser.estimated_value - next_lower_bid))
+            current_advertiser.set_bid(best_bid)
+            maximized_utilities.append(best_bid)
+        maximized_utilities.sort(reverse=True)
+        print("Maximized Utilities: ", maximized_utilities)
+        return maximized_utilities
+
     def calculate_avg_positions(self):
         if self.no_retail_ads_male == 0:
             self.avg_position_retail_male = 0
         else:
-            self.avg_position_retail_male = self.sum_position_retail_male/self.no_retail_ads_male
+            self.avg_position_retail_male = self.sum_position_retail_male / self.no_retail_ads_male
 
         if self.no_economic_ads_male == 0:
             self.avg_position_economic_male = 0
         else:
-            self.avg_position_economic_male = self.sum_position_economic_male/self.no_economic_ads_male
+            self.avg_position_economic_male = self.sum_position_economic_male / self.no_economic_ads_male
 
         if self.no_retail_ads_female == 0:
             self.avg_position_retail_female = 0
         else:
-            self.avg_position_retail_female = self.sum_position_retail_female/self.no_retail_ads_female
+            self.avg_position_retail_female = self.sum_position_retail_female / self.no_retail_ads_female
 
         if self.no_economic_ads_female == 0:
             self.avg_position_economic_female = 0
         else:
-            self.avg_position_economic_female = self.sum_position_economic_female/self.no_economic_ads_female
+            self.avg_position_economic_female = self.sum_position_economic_female / self.no_economic_ads_female
 
     def count_advertisers(self):
         for current_advertiser in self.advertisers:
