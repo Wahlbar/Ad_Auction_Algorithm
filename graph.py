@@ -5,7 +5,7 @@ import pandas as pd
 import os
 
 
-def ad_per_sex_bar_plot_absolute(data_frame, no):
+def ad_per_sex_bar_plot_absolute(data_frame, no, folder):
     ratio_sex_users = int(data_frame["ratio_sex_users"].values[0] * 100)
     ratio_advertisers = int(data_frame["ratio_advertisers"].values[0] * 100)
     budget = int(data_frame["budget"].values[0])
@@ -28,13 +28,13 @@ def ad_per_sex_bar_plot_absolute(data_frame, no):
                              "user size: " + str(user_size) + "\n"
                              "budget: " + str(budget) + "\n", fontsize=10, bbox=props)
 
-    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph\catplot_absolute" + str(
+    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph" + folder + "catplot_absolute" + str(
         no) + ".jpg", bbox_inches='tight')
     plt.close()
     return
 
 
-def ad_per_sex_bar_plot_percentage(data_frame, no):
+def ad_per_sex_bar_plot_percentage(data_frame, no, folder):
     ratio_sex_users = int(data_frame["ratio_sex_users"].values[0] * 100)
     ratio_advertisers = int(data_frame["ratio_advertisers"].values[0] * 100)
     budget = int(data_frame["budget"].values[0])
@@ -58,7 +58,7 @@ def ad_per_sex_bar_plot_percentage(data_frame, no):
                              "budget: " + str(budget) + "\n", fontsize=10, bbox=props)
 
     # plt.show()
-    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph\catplot_percentage" + str(
+    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph" + folder + "catplot_percentage" + str(
         no) + ".jpg", bbox_inches='tight')
     plt.close()
     return
@@ -68,22 +68,41 @@ def draw_multiple():
     """Runs a simulation for each parameter combination file listed in file_name
     File_name should have multiple lines, each with a "VariablesXXXXX.csv" """
     # folder path
-    dir_path = r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV"
+    dir_path_unrestrained = r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\unrestrained"
     count = 0
+    folder_unrestrained = "/unrestrained/"
     # Iterate directory
-    for path in os.listdir(dir_path):
+    for path in os.listdir(dir_path_unrestrained):
         # check if current path is a file
-        if os.path.isfile(os.path.join(dir_path, path)):
+        if os.path.isfile(os.path.join(dir_path_unrestrained, path)):
             count += 1
 
     count = 1
     for i in range(count):
         print("Graph: ", i + 1)
-        with open(dir_path + r"\Data" + str(i + 1) + ".csv",
+        with open(dir_path_unrestrained + r"\Data" + str(i + 1) + ".csv",
                   'r') as document:
             data_frame = pd.read_csv(document)
-            ad_per_sex_bar_plot_absolute(data_frame, i + 1)
-            ad_per_sex_bar_plot_percentage(data_frame, i + 1)
+            ad_per_sex_bar_plot_absolute(data_frame, i + 1, folder_unrestrained)
+            ad_per_sex_bar_plot_percentage(data_frame, i + 1, folder_unrestrained)
+
+    dir_path_prop_slot = r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\prop_slot"
+    count = 0
+    folder_prop_slot = "/prop_slot/"
+    # Iterate directory
+    for path in os.listdir(dir_path_prop_slot):
+        # check if current path is a file
+        if os.path.isfile(os.path.join(dir_path_prop_slot, path)):
+            count += 1
+
+    count = 1
+    for i in range(count):
+        print("Graph: ", i + 1)
+        with open(dir_path_prop_slot + r"\Data" + str(i + 1) + ".csv",
+                  'r') as document:
+            data_frame = pd.read_csv(document)
+            ad_per_sex_bar_plot_absolute(data_frame, i + 1, folder_prop_slot)
+            ad_per_sex_bar_plot_percentage(data_frame, i + 1, folder_prop_slot)
     return
 
 
