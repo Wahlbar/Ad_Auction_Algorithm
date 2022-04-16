@@ -1,5 +1,7 @@
 import numpy as np
-import auction
+
+import proportional_slot_auction
+import unrestrained_gsp_auction
 
 
 class SingleSimulation:
@@ -15,21 +17,33 @@ class SingleSimulation:
 
         # read simulation parameters
         random_seed = [98188, 66162, 13363, 13235, 36248,
-                       15, 62692, 7892, 90537, 14756]\
+                       15, 62692, 7892, 90537, 14756] \
             # ,
-            #            72934, 67102, 52, 6784, 96430,
-            #            79216, 88064, 68301, 57192, 4745]
-        result = []
+        #            72934, 67102, 52, 6784, 96430,
+        #            79216, 88064, 68301, 57192, 4745]
+        result_1 = []
+        result_2 = []
 
         # iterate through the seeds
         for seed in random_seed:
             np.random.seed(seed)
             print("Seed", seed)
-            # generate a new auction
-            single_auction = auction.Auction(self.parameters)
-            single_auction.generate_users(single_auction.user_size)
-            single_auction.generate_advertisers(single_auction.advertiser_size)
-            single_auction.auctioning()
+            # generate a unrestrained gsp auction
+            auction_1 = unrestrained_gsp_auction.Auction(self.parameters)
+            users = auction_1.generate_users(auction_1.user_size)
+            advertisers = auction_1.generate_advertisers(auction_1.advertiser_size)
+
+            # generate a separated slot auction
+            auction_2 = proportional_slot_auction.Auction(self.parameters)
+            auction_2.set_users(users.copy())
+            auction_2.set_advertisers(advertisers.copy())
+
+            # run the unrestrained gsp auction
+            auction_1.auctioning()
+
+            # run the separated proportional slot gsp auction
+            auction_2.reset_advertisers_budget()
+            auction_2.auctioning()
 
             # update the statistics
             # [no male, no female, no retail advertiser, no economic advertiser,
@@ -37,54 +51,62 @@ class SingleSimulation:
             # no retail ads male, no retail ads female, no economic ads male, no economic ads female,
             # average position male retail, average position male economic, average position female retail, average position female economic,
             # platform revenue]
-            percentage_retail_ads_male = 0
-            if single_auction.no_retail_ads_total != 0:
-                percentage_retail_ads_male = single_auction.no_retail_ads_male / single_auction.no_retail_ads_total
 
-            per_user_retail_ads_male = 0
-            if single_auction.no_male != 0:
-                per_user_retail_ads_male = single_auction.no_retail_ads_male / single_auction.no_male
+            result_1.extend(self.update_statistics(auction_1))
+            result_2.extend(self.update_statistics(auction_2))
 
-            result.append(["male", single_auction.no_retail_ads_male, percentage_retail_ads_male,
-                           per_user_retail_ads_male, "retailer", single_auction.avg_position_retail_male,
-                           single_auction.no_male, single_auction.no_female, single_auction.no_retailer,
-                           single_auction.no_economic, single_auction.platform_revenue[0],
-                           self.parameters["ratio_sex_users"], self.parameters["ratio_advertisers"],
-                           self.parameters["budget"],
-                           self.parameters["ratio_user_advertiser"], self.parameters["advertiser_size"]])
+        return result_1, result_2
 
-            percentage_retail_ads_female = 0
-            if single_auction.no_retail_ads_total != 0:
-                percentage_retail_ads_female = single_auction.no_retail_ads_female / single_auction.no_retail_ads_total
+    def update_statistics(self, auction):
+        result = []
+        percentage_retail_ads_male = 0
+        if auction.no_retail_ads_total != 0:
+            percentage_retail_ads_male = auction.no_retail_ads_male / auction.no_retail_ads_total
 
-            per_user_retail_ads_female = 0
-            if single_auction.no_female != 0:
-                per_user_retail_ads_female = single_auction.no_retail_ads_female / single_auction.no_female
+        per_user_retail_ads_male = 0
+        if auction.no_male != 0:
+            per_user_retail_ads_male = auction.no_retail_ads_male / auction.no_male
 
-            result.append(["female", single_auction.no_retail_ads_female, percentage_retail_ads_female,
-                           per_user_retail_ads_female, "retailer", single_auction.avg_position_retail_female])
+        result.append(["male", auction.no_retail_ads_male, percentage_retail_ads_male,
+                       per_user_retail_ads_male, "retailer", auction.avg_position_retail_male,
+                       auction.no_male, auction.no_female, auction.no_retailer,
+                       auction.no_economic, auction.platform_revenue[0],
+                       self.parameters["ratio_sex_users"], self.parameters["ratio_advertisers"],
+                       self.parameters["budget"],
+                       self.parameters["ratio_user_advertiser"], self.parameters["advertiser_size"]])
 
-            percentage_economic_ads_male = 0
-            if single_auction.no_economic_ads_total != 0:
-                percentage_economic_ads_male = single_auction.no_economic_ads_male / single_auction.no_economic_ads_total
+        percentage_retail_ads_female = 0
+        if auction.no_retail_ads_total != 0:
+            percentage_retail_ads_female = auction.no_retail_ads_female / auction.no_retail_ads_total
 
-            per_user_economic_ads_male = 0
-            if single_auction.no_male != 0:
-                per_user_economic_ads_male = single_auction.no_economic_ads_male / single_auction.no_male
+        per_user_retail_ads_female = 0
+        if auction.no_female != 0:
+            per_user_retail_ads_female = auction.no_retail_ads_female / auction.no_female
 
-            result.append(["male", single_auction.no_economic_ads_male, percentage_economic_ads_male,
-                           per_user_economic_ads_male, "economic", single_auction.avg_position_economic_male])
+        result.append(["female", auction.no_retail_ads_female, percentage_retail_ads_female,
+                       per_user_retail_ads_female, "retailer", auction.avg_position_retail_female])
 
-            percentage_economic_ads_female = 0
-            if single_auction.no_economic_ads_total != 0:
-                percentage_economic_ads_female = single_auction.no_economic_ads_female / single_auction.no_economic_ads_total
+        percentage_economic_ads_male = 0
+        if auction.no_economic_ads_total != 0:
+            percentage_economic_ads_male = auction.no_economic_ads_male / auction.no_economic_ads_total
 
-            per_user_economic_ads_female = 0
-            if single_auction.no_female != 0:
-                per_user_economic_ads_female = single_auction.no_economic_ads_male / single_auction.no_female
+        per_user_economic_ads_male = 0
+        if auction.no_male != 0:
+            per_user_economic_ads_male = auction.no_economic_ads_male / auction.no_male
 
-            result.append(["female", single_auction.no_economic_ads_female, percentage_economic_ads_female,
-                           per_user_economic_ads_female, "economic", single_auction.avg_position_economic_female])
+        result.append(["male", auction.no_economic_ads_male, percentage_economic_ads_male,
+                       per_user_economic_ads_male, "economic", auction.avg_position_economic_male])
+
+        percentage_economic_ads_female = 0
+        if auction.no_economic_ads_total != 0:
+            percentage_economic_ads_female = auction.no_economic_ads_female / auction.no_economic_ads_total
+
+        per_user_economic_ads_female = 0
+        if auction.no_female != 0:
+            per_user_economic_ads_female = auction.no_economic_ads_male / auction.no_female
+
+        result.append(["female", auction.no_economic_ads_female, percentage_economic_ads_female,
+                       per_user_economic_ads_female, "economic", auction.avg_position_economic_female])
 
         return result
 

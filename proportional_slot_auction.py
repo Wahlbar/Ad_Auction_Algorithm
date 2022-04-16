@@ -10,7 +10,6 @@ class Auction:
         self.parameters = list_parameters
         self.users = []
         self.advertisers = []
-        self.sorted_advertiser_by_estimated_value = []
 
         self.slots_per_user = int(self.parameters['slots_per_user'])
         self.advertiser_size = int(self.parameters['advertiser_size'])
@@ -19,6 +18,10 @@ class Auction:
 
         self.position_effects = []
         self.calculate_position_effects()
+
+        self.sorted_advertiser_by_type = []
+        self.list_retailer = []
+        self.list_economics = []
 
         # number of retailer and economic opportunity advertisers at each iteration
         self.no_retail_ads_total = 0
@@ -60,19 +63,22 @@ class Auction:
         # reserve price TODO: Argue why!
         self.reserve_price = 0.5
 
-    # Generate the users for the auction.
-    def generate_users(self, no_users):
-        for i in range(no_users):
-            self.users.append(user.User(self.parameters))
+    def set_users(self, users):
+        self.users = users
 
-    # Generate the advertisers for the action.
-    def generate_advertisers(self, no_advertisers):
-        for i in range(no_advertisers):
-            self.advertisers.append(advertiser.Advertiser(self.parameters))
+    def set_advertisers(self, advertisers):
+        self.advertisers = advertisers
 
     def calculate_position_effects(self):
         for i in range(self.slots_per_user):
             self.position_effects.append((self.slots_per_user - i)/self.slots_per_user)
+
+    def sort_advertisers(self):
+        for adv in self.advertisers:
+            if adv.advertiser_type == "r":
+                self.list_retailer.append(adv)
+            elif adv.advertiser_type == "e":
+                self.list_economics.append(adv)
 
     def auctioning(self):
         """
@@ -86,49 +92,47 @@ class Auction:
 
         # Count the advertisers:
         self.count_advertisers()
-
+        self.sort_advertisers()
+        len_list_retailer = len(self.list_retailer)
+        len_list_economics = len(self.list_economics)
+        len_list_advertisers = len(self.advertisers)
         # 0.
         for current_user in self.users:
 
-            # 1.
-            for current_advertiser in self.advertisers:
-                current_advertiser.gsp_truthful_bidding(current_user)
+            retail_slots_position_effect = []
+            economic_slots_position_effect = []
+
+            # 1. let each slot be either a retailer or an economic opportunities slot!
+            for i in range(self.slots_per_user):
+                slot_type = np.random.choice(["r", "e"], 1, p=[len_list_retailer/len_list_advertisers, len_list_economics/len_list_advertisers])
+                if slot_type == "r":
+                    retail_slots_position_effect.append(self.position_effects[i])
+                elif slot_type == "e":
+                    economic_slots_position_effect.append(self.position_effects[i])
+
+            # A.
+            # 2. run gsp for only retailers and retail slots
+            if self.list_retailer and retail_slots_position_effect:
+                for current_advertiser in self.list_retailer:
+                    current_advertiser.gsp_truthful_bidding(current_user)
                 # If the advertiser is sold out, remove him from the bid
-                if current_advertiser.estimated_value == 0:
-                    self.advertisers.remove(current_advertiser)
-            # Breaking ties is not very important since the probability of getting two similar numbers is very low due to the continuous space.
-            # Here the ties are not broken randomly.
-            # 2.
+                    if current_advertiser.estimated_value == 0:
+                        self.list_retailer.remove(current_advertiser)
             # Check if there are no advertisers able to bid anymore and break if so.
-            if not self.advertisers:
-                break
-            self.sorted_advertiser_by_estimated_value = sorted(self.advertisers, key=lambda adv: adv.estimated_value, reverse=True)
-            winning_advertisers = self.sorted_advertiser_by_estimated_value[:self.slots_per_user]
+            if self.list_retailer and retail_slots_position_effect:
+                self.auction_for_one_user(current_user, retail_slots_position_effect, self.list_retailer)
 
-            # remove advertiser with a too low estimated_value from the winning list
-            for current_advertiser in winning_advertisers:
-                # remove advertiser with a too low estimated_value
-                if current_advertiser.estimated_value < self.reserve_price:
-                    winning_advertisers.remove(current_advertiser)
-
-            # Calculate the envy free bids
-            envy_free_bids = self.calculate_utilities(winning_advertisers, self.reserve_price)
-
-            # 3. For each winner get the position of the next advertiser and pay its bid to the platform.
-            # Run it once with truthful bidding and once with the strategized bidding. 
-            second_price_index = 1
-            for bid in envy_free_bids:
-                if second_price_index < len(envy_free_bids):
-                    next_bid = envy_free_bids[second_price_index]
-                    cost = next_bid
-                else:
-                    cost = self.reserve_price
-                self.platform_revenue += cost
-                winning_advertisers[envy_free_bids.index(bid)].pay(cost)
-                second_price_index += 1
-
-            # 4.
-            self.save_statistics(current_user, winning_advertisers)
+            # B.
+            # 2. run gsp for only economics and economics slots
+            if self.list_economics and economic_slots_position_effect:
+                for current_advertiser in self.list_economics:
+                    current_advertiser.gsp_truthful_bidding(current_user)
+                    # If the advertiser is sold out, remove him from the bid
+                    if current_advertiser.estimated_value == 0:
+                        self.list_economics.remove(current_advertiser)
+            # Check if there are no advertisers able to bid anymore and break if so.
+            if self.list_economics and economic_slots_position_effect:
+                self.auction_for_one_user(current_user, economic_slots_position_effect, self.list_economics)
 
         self.calculate_avg_positions()
 
@@ -158,8 +162,8 @@ class Auction:
                     self.no_economic_ads_total += 1
                     self.sum_position_economic_female += winning_advertisers.index(current_advertiser)
 
-# WORKS!
-    def calculate_utilities(self, winning_advertisers, min_price):
+    # WORKS!
+    def calculate_utilities(self, winning_advertisers, min_price, position_effects):
         maximized_utilities = []
         for current_advertiser in reversed(winning_advertisers):
             position_index = winning_advertisers.index(current_advertiser)
@@ -168,16 +172,13 @@ class Auction:
             else:
                 next_advertiser = winning_advertisers[position_index+1]
                 next_lower_bid = next_advertiser.bid
-            print("true value", current_advertiser.estimated_value)
-            print("next lower bid", next_lower_bid)
             if position_index == 0:
                 best_bid = current_advertiser.estimated_value
             else:
-                best_bid = current_advertiser.estimated_value - (self.position_effects[position_index]/self.position_effects[position_index-1] * (current_advertiser.estimated_value - next_lower_bid))
+                best_bid = current_advertiser.estimated_value - (position_effects[position_index]/position_effects[position_index-1] * (current_advertiser.estimated_value - next_lower_bid))
             current_advertiser.set_bid(best_bid)
             maximized_utilities.append(best_bid)
         maximized_utilities.sort(reverse=True)
-        print("Maximized Utilities: ", maximized_utilities)
         return maximized_utilities
 
     def calculate_avg_positions(self):
@@ -207,4 +208,42 @@ class Auction:
                 self.no_retailer += 1
             elif current_advertiser.advertiser_type == "e":
                 self.no_economic += 1
+        return
+
+    def auction_for_one_user(self, current_user, list_position_effect, list_advertisers):
+        # A.
+        # 2. run gsp for only retailers and retail slots
+        # Check if there are no advertisers able to bid anymore and break if so.
+        sorted_advertiser_by_estimated_value = sorted(list_advertisers, key=lambda adv: adv.estimated_value, reverse=True)
+        winning_retailers = sorted_advertiser_by_estimated_value[:len(list_position_effect)]
+
+        # remove advertiser with a too low estimated_value from the winning list
+        for current_advertiser in winning_retailers:
+            # remove advertiser with a too low estimated_value
+            if current_advertiser.estimated_value < self.reserve_price:
+                winning_retailers.remove(current_advertiser)
+
+        # Calculate the envy free bids
+        envy_free_bids = self.calculate_utilities(winning_retailers, self.reserve_price, list_position_effect)
+
+        # 3. For each winner get the position of the next advertiser and pay its bid to the platform.
+        # Run it once with truthful bidding and once with the strategized bidding.
+        second_price_index = 1
+        for bid in envy_free_bids:
+            if second_price_index < len(envy_free_bids):
+                next_bid = envy_free_bids[second_price_index]
+                cost = next_bid
+            else:
+                cost = self.reserve_price
+            self.platform_revenue += cost
+            winning_retailers[envy_free_bids.index(bid)].pay(cost)
+            second_price_index += 1
+
+        # 4.
+        self.save_statistics(current_user, winning_retailers)
+        return
+
+    def reset_advertisers_budget(self):
+        for adv in self.advertisers:
+            adv.reset_budget()
         return

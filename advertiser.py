@@ -91,3 +91,5 @@ class Advertiser:
         self.bid = bid
         return
 
+    def reset_budget(self):
+        self.budget = float(self.parameters['budget'])

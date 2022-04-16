@@ -42,13 +42,20 @@ def run_multiple():
 
     for i in range(count):
         print("Simulation: ", i+1)
-        simulation = run_one_file(i+1)
-        with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\Data" + str(i+1) + ".csv",
+        simulation_1, simulation_2 = run_one_file(i+1)
+        with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\Data_unrestrained" + str(i+1) + ".csv",
                   'w') as output:
             write = csv.writer(output)
             write.writerow(sim.write_header())
-            for j in range(len(simulation)):
-                write.writerow(simulation[j])
+            for j in range(len(simulation_1)):
+                write.writerow(simulation_1[j])
+
+        with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\Data_prop_slot" + str(i+1) + ".csv",
+                  'w') as output:
+            write = csv.writer(output)
+            write.writerow(sim.write_header())
+            for j in range(len(simulation_2)):
+                write.writerow(simulation_2[j])
 
 # run big simulations only for one set of parameters and then say that there are no significant differences.
 
