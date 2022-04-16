@@ -116,7 +116,7 @@ class Auction:
                 for current_advertiser in self.list_retailer:
                     current_advertiser.gsp_truthful_bidding(current_user)
                 # If the advertiser is sold out, remove him from the bid
-                    if current_advertiser.estimated_value == 0:
+                    if current_advertiser.estimated_value < self.reserve_price and current_advertiser.budget < self.reserve_price:
                         self.list_retailer.remove(current_advertiser)
             # Check if there are no advertisers able to bid anymore and break if so.
             if self.list_retailer and retail_slots_position_effect:
@@ -128,7 +128,7 @@ class Auction:
                 for current_advertiser in self.list_economics:
                     current_advertiser.gsp_truthful_bidding(current_user)
                     # If the advertiser is sold out, remove him from the bid
-                    if current_advertiser.estimated_value == 0:
+                    if current_advertiser.estimated_value < self.reserve_price and current_advertiser.budget < self.reserve_price:
                         self.list_economics.remove(current_advertiser)
             # Check if there are no advertisers able to bid anymore and break if so.
             if self.list_economics and economic_slots_position_effect:
@@ -218,7 +218,7 @@ class Auction:
         winning_retailers = sorted_advertiser_by_estimated_value[:len(list_position_effect)]
 
         # remove advertiser with a too low estimated_value from the winning list
-        for current_advertiser in winning_retailers:
+        for current_advertiser in list(winning_retailers):
             # remove advertiser with a too low estimated_value
             if current_advertiser.estimated_value < self.reserve_price:
                 winning_retailers.remove(current_advertiser)

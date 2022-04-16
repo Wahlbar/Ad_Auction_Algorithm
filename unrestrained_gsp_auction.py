@@ -102,7 +102,7 @@ class Auction:
             for current_advertiser in self.advertisers:
                 current_advertiser.gsp_truthful_bidding(current_user)
                 # If the advertiser is sold out, remove him from the bid
-                if current_advertiser.estimated_value == 0:
+                if current_advertiser.estimated_value < self.reserve_price and current_advertiser.budget < self.reserve_price:
                     self.advertisers.remove(current_advertiser)
             # Breaking ties is not very important since the probability of getting two similar numbers is very low due to the continuous space.
             # Here the ties are not broken randomly.
@@ -114,7 +114,7 @@ class Auction:
             winning_advertisers = self.sorted_advertiser_by_estimated_value[:self.slots_per_user]
 
             # remove advertiser with a too low estimated_value from the winning list
-            for current_advertiser in winning_advertisers:
+            for current_advertiser in list(winning_advertisers):
                 # remove advertiser with a too low estimated_value
                 if current_advertiser.estimated_value < self.reserve_price:
                     winning_advertisers.remove(current_advertiser)

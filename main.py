@@ -38,9 +38,7 @@ def run_multiple():
         if os.path.isfile(os.path.join(dir_path, path)):
             count += 1
 
-    count = 1
-
-    for i in range(count):
+    for i in range(243):
         print("Simulation: ", i+1)
         simulation_1, simulation_2 = run_one_file(i+1)
         with open(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\unrestrained\Data" + str(i+1) + ".csv",

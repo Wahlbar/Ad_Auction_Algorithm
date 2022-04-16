@@ -16,9 +16,9 @@ class SingleSimulation:
         """Runs the simulation with the given parameters."""
 
         # read simulation parameters
-        random_seed = [98188, 66162, 13363, 13235, 36248,
-                       15, 62692, 7892, 90537, 14756] \
-            # ,
+        random_seed = [98188, 66162, 13363, 13235, 36248]
+                       # 15, 62692, 7892, 90537, 14756]
+        # ,
         #            72934, 67102, 52, 6784, 96430,
         #            79216, 88064, 68301, 57192, 4745]
         result_1 = []

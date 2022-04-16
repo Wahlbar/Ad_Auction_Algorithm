@@ -23,13 +23,16 @@ def ad_per_sex_bar_plot_absolute(data_frame, no, folder):
     # plt.title("Absolute number of retail and economic ads shown to male and female users")
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
     plt.gcf().text(0.9, 0.1, "female to male ratio: " + str(ratio_sex_users) + "%\n"
-                             "retailer to economic opportunity ratio: " + str(ratio_advertisers) + "%\n"
+                                                                               "retailer to economic opportunity ratio: " + str(
+        ratio_advertisers) + "%\n"
                              "advertiser size: " + str(advertiser_size) + "\n"
-                             "user size: " + str(user_size) + "\n"
-                             "budget: " + str(budget) + "\n", fontsize=10, bbox=props)
+                                                                          "user size: " + str(user_size) + "\n"
+                                                                                                           "budget: " + str(
+        budget) + "\n", fontsize=10, bbox=props)
 
-    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph" + folder + "catplot_absolute" + str(
-        no) + ".jpg", bbox_inches='tight')
+    plt.savefig(
+        r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph" + folder + "catplot_absolute" + str(
+            no) + ".jpg", bbox_inches='tight')
     plt.close()
     return
 
@@ -52,14 +55,17 @@ def ad_per_sex_bar_plot_percentage(data_frame, no, folder):
     # plt.title("Percentage of retail and economic ads shown to male and female users")
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
     plt.gcf().text(0.9, 0.1, "female to male ratio: " + str(ratio_sex_users) + "%\n"
-                             "retailer to economic opportunity ratio: " + str(ratio_advertisers) + "%\n"
+                                                                               "retailer to economic opportunity ratio: " + str(
+        ratio_advertisers) + "%\n"
                              "advertiser size: " + str(advertiser_size) + "\n"
-                             "user size: " + str(user_size) + "\n"
-                             "budget: " + str(budget) + "\n", fontsize=10, bbox=props)
+                                                                          "user size: " + str(user_size) + "\n"
+                                                                                                           "budget: " + str(
+        budget) + "\n", fontsize=10, bbox=props)
 
     # plt.show()
-    plt.savefig(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph" + folder + "catplot_percentage" + str(
-        no) + ".jpg", bbox_inches='tight')
+    plt.savefig(
+        r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\Graph" + folder + "catplot_percentage" + str(
+            no) + ".jpg", bbox_inches='tight')
     plt.close()
     return
 
@@ -77,12 +83,33 @@ def draw_multiple():
         if os.path.isfile(os.path.join(dir_path_unrestrained, path)):
             count += 1
 
+    data_frame_unrestrained = pd.DataFrame([],
+                                           columns=["platform revenue average", "std", "ratio_sex_users",
+                                                    "ratio_advertisers", "budget", "ratio_user_advertiser",
+                                                    "advertiser_size", "type"])
+
     count = 1
     for i in range(count):
         print("Graph: ", i + 1)
         with open(dir_path_unrestrained + r"\Data" + str(i + 1) + ".csv",
                   'r') as document:
             data_frame = pd.read_csv(document)
+            revenue_unrestrained = data_frame[
+                ["platform revenue", "ratio_sex_users", "ratio_advertisers", "budget", "ratio_user_advertiser",
+                 "advertiser_size"]]
+            clean_revenue_unrestrained = revenue_unrestrained.dropna()
+
+            average = clean_revenue_unrestrained["platform revenue"].describe()["mean"]
+            std = clean_revenue_unrestrained["platform revenue"].describe()["std"]
+            ratio_sex_users = float(data_frame["ratio_sex_users"].values[0])
+            ratio_advertisers = float(data_frame["ratio_advertisers"].values[0])
+            budget = int(data_frame["budget"].values[0])
+            ratio_user_advertiser = int(data_frame["ratio_user_advertiser"].values[0])
+            advertiser_size = int(data_frame["advertiser_size"].values[0])
+
+            data_frame_unrestrained.loc[i] = [average, std, ratio_sex_users, ratio_advertisers, budget,
+                                              ratio_user_advertiser, advertiser_size, folder_unrestrained]
+
             ad_per_sex_bar_plot_absolute(data_frame, i + 1, folder_unrestrained)
             ad_per_sex_bar_plot_percentage(data_frame, i + 1, folder_unrestrained)
 
@@ -95,14 +122,38 @@ def draw_multiple():
         if os.path.isfile(os.path.join(dir_path_prop_slot, path)):
             count += 1
 
+    data_frame_prop_slot = pd.DataFrame([],
+                                        columns=["platform revenue average", "std", "ratio_sex_users",
+                                                 "ratio_advertisers", "budget", "ratio_user_advertiser",
+                                                 "advertiser_size", "type"])
+
     count = 1
     for i in range(count):
         print("Graph: ", i + 1)
         with open(dir_path_prop_slot + r"\Data" + str(i + 1) + ".csv",
                   'r') as document:
             data_frame = pd.read_csv(document)
-            ad_per_sex_bar_plot_absolute(data_frame, i + 1, folder_prop_slot)
-            ad_per_sex_bar_plot_percentage(data_frame, i + 1, folder_prop_slot)
+            revenue_prop_slot = data_frame[
+                ["platform revenue", "ratio_sex_users", "ratio_advertisers", "budget", "ratio_user_advertiser",
+                 "advertiser_size"]]
+            clean_revenue_prop_slot = revenue_prop_slot.dropna()
+
+            average = clean_revenue_prop_slot["platform revenue"].describe()["mean"]
+            std = clean_revenue_prop_slot["platform revenue"].describe()["std"]
+            ratio_sex_users = float(data_frame["ratio_sex_users"].values[0])
+            ratio_advertisers = float(data_frame["ratio_advertisers"].values[0])
+            budget = int(data_frame["budget"].values[0])
+            ratio_user_advertiser = int(data_frame["ratio_user_advertiser"].values[0])
+            advertiser_size = int(data_frame["advertiser_size"].values[0])
+
+            data_frame_prop_slot.loc[i] = [average, std, ratio_sex_users, ratio_advertisers, budget,
+                                          ratio_user_advertiser, advertiser_size, folder_prop_slot]
+
+        ad_per_sex_bar_plot_absolute(data_frame, i + 1, folder_prop_slot)
+        ad_per_sex_bar_plot_percentage(data_frame, i + 1, folder_prop_slot)
+
+    total = data_frame_unrestrained.append(data_frame_prop_slot, ignore_index=True)
+    total.to_csv(r"C:\Users\User\Desktop\Studium\Informatik\Bachelorarbeit\data_results\CSV\total\Data.csv")
     return
 
 
