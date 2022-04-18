@@ -16,11 +16,11 @@ class SingleSimulation:
         """Runs the simulation with the given parameters."""
 
         # read simulation parameters
-        random_seed = [98188, 66162, 13363, 13235, 36248]
-                       # 15, 62692, 7892, 90537, 14756]
-        # ,
-        #            72934, 67102, 52, 6784, 96430,
-        #            79216, 88064, 68301, 57192, 4745]
+        random_seed = [98188, 66162, 13363, 13235, 36248,
+                       15, 62692, 7892, 90537, 14756,
+                       72934, 67102, 52, 6784, 96430,
+                       79216, 88064, 68301, 57192, 4745,
+                       5719, 4143, 63913, 66113, 98683]
         result_1 = []
         result_2 = []
 
@@ -103,7 +103,7 @@ class SingleSimulation:
 
         per_user_economic_ads_female = 0
         if auction.no_female != 0:
-            per_user_economic_ads_female = auction.no_economic_ads_male / auction.no_female
+            per_user_economic_ads_female = auction.no_economic_ads_female / auction.no_female
 
         result.append(["female", auction.no_economic_ads_female, percentage_economic_ads_female,
                        per_user_economic_ads_female, "economic", auction.avg_position_economic_female])
