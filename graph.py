@@ -15,20 +15,20 @@ def add_type_to_set(data_frame, auction_type):
 
 
 def average_revenue(data_frame, auction_type):
-    revenue_unrestrained = data_frame[
+    df_average_revenue = data_frame[
         ["platform revenue", "ratio_sex_users", "ratio_advertisers", "budget", "ratio_user_advertiser",
          "advertiser_size"]]
-    clean_revenue_unrestrained = revenue_unrestrained.dropna()
+    clean_df_average_revenue = df_average_revenue.dropna()
 
-    average = clean_revenue_unrestrained["platform revenue"].describe()["mean"]
-    std = clean_revenue_unrestrained["platform revenue"].describe()["std"]
+    revenue_average = clean_df_average_revenue["platform revenue"].describe()["mean"]
+    revenue_std = clean_df_average_revenue["platform revenue"].describe()["std"]
     ratio_sex_users = float(data_frame["ratio_sex_users"].values[0])
     ratio_advertisers = float(data_frame["ratio_advertisers"].values[0])
     budget = int(data_frame["budget"].values[0])
     ratio_user_advertiser = int(data_frame["ratio_user_advertiser"].values[0])
     advertiser_size = int(data_frame["advertiser_size"].values[0])
 
-    return [average, std, ratio_sex_users, ratio_advertisers, budget,
+    return [revenue_average, revenue_std, ratio_sex_users, ratio_advertisers, budget,
             ratio_user_advertiser, advertiser_size, auction_type]
 
 
@@ -184,7 +184,8 @@ def draw_revenue_graph():
                      'platform revenue average': 'Platform Revenue',
                      'ratio_advertisers': 'Retailer to Economic \n'
                                           'Opportunity Ratio',
-                     'type': 'Auction Type'
+                     'type': 'Auction Type',
+                     'std': 'Standard Deviation'
                      }
 
         # call rename () method
@@ -218,14 +219,14 @@ def draw_revenue_graph():
             for to_plot in revenue_vs_user_ratio:
                 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
                 sns.relplot(
-                    data=to_plot, x="Female to Male Ratio", y="Platform Revenue", ci="std", marker='o',
+                    data=to_plot, x="Female to Male Ratio", y="Platform Revenue", ci="Standard Deviation", marker='o',
                     err_style="bars", hue="Retailer to Economic \n"
                                           "Opportunity Ratio", col="Auction Type", kind="line",
                     palette=colors
                 )
                 plt.gcf().text(0.85, 0.85,
-                               "Budget: " + str(budget_size) + "%\n"
-                               "User Size: " + str(user_size[i] * advertiser_size[i]) + "%\n"
+                               "Budget: " + str(budget_size) + "\n"
+                               "User Size: " + str(user_size[i] * advertiser_size[i]) + "\n"
                                "Advertiser Size: " + str(advertiser_size[i]) + "\n",
                                fontsize=10, bbox=props)
 
@@ -236,7 +237,7 @@ def draw_revenue_graph():
 
                 sns.relplot(
                     data=to_plot, x="Retailer to Economic \n"
-                                    "Opportunity Ratio", y="Platform Revenue", ci="std", marker='o',
+                                    "Opportunity Ratio", y="Platform Revenue", ci="Standard Deviation", marker='o',
                     err_style="bars", hue="Female to Male Ratio", col="Auction Type", kind="line",
                     palette=colors
                 )
@@ -255,6 +256,153 @@ def draw_revenue_graph():
     return
 
 
-draw_multiple()
-draw_revenue_graph()
+def draw_percentage_reach_graph():
+    with open("C:/Users/User/Desktop/Studium/Informatik/Bachelorarbeit/data_results/CSV/total/Data_long_filled.csv") as data:
+        dataframe = pd.read_csv(data, index_col=0)
+        new_names = {'sex absolute': 'Absolute Number of Ads Seen By User',
+                     'sex': 'Sex',
+                     'percentage': 'Ratio of Ads Seen By User',
+                     'avg position': 'Average Position of the Ad',
+                     'no_male': 'Number of Male Users',
+                     'no_female': 'Number of Female Users',
+                     'no_retailer': 'Number of Retail Advertisers',
+                     'no_economic': 'Number of Economic Opportunity Advertisers',
+
+                     'ratio_user_advertiser': 'User Size',
+                     'advertiser_size': 'Advertiser Size',
+                     'budget': 'Budget',
+                     'ratio_sex_users': 'Female to Male Ratio',
+                     'platform revenue': 'Platform Revenue',
+                     'ratio_advertisers': 'Retailer to Economic \n'
+                                          'Opportunity Ratio',
+                     'type': 'Advertiser Type'
+                     }
+        # call rename () method
+        dataframe.rename(columns=new_names, inplace=True)
+
+        user_l_advertiser_l = dataframe.loc[
+            (dataframe["User Size"] == 100) & (dataframe["Advertiser Size"] == 100)]
+        user_l_advertiser_s = dataframe.loc[
+            (dataframe["User Size"] == 100) & (dataframe["Advertiser Size"] == 10)]
+
+        sample_sizes = [user_l_advertiser_l, user_l_advertiser_s]
+
+        user_size = [100, 100]
+        advertiser_size = [100, 10]
+        retail_ratio = [0.9, 0.5, 0.1]
+
+        colors = ["lightblue", "orange"]
+        population_size = ["user_l_adv_l", "user_l_adv_s"]
+
+        i = 0
+
+        for df in sample_sizes:
+
+            bud_100 = df.loc[df["Budget"] == 100]
+            bud_10000 = df.loc[df["Budget"] == 10000]
+            revenue_vs_user_ratio = [bud_100, bud_10000]
+            budget_size = 100
+
+            for df2 in revenue_vs_user_ratio:
+
+                retail_ratio_90 = df2.loc[df2['Retailer to Economic \n'
+                                              'Opportunity Ratio'] == 0.9]
+                retail_ratio_50 = df2.loc[df2['Retailer to Economic \n'
+                                              'Opportunity Ratio'] == 0.5]
+                retail_ratio_10 = df2.loc[df2['Retailer to Economic \n'
+                                              'Opportunity Ratio'] == 0.1]
+                user_ratio_90 = df2.loc[df2['Female to Male Ratio'] == 0.9]
+                user_ratio_50 = df2.loc[df2['Female to Male Ratio'] == 0.5]
+                user_ratio_10 = df2.loc[df2['Female to Male Ratio'] == 0.1]
+
+                user_ratios = [user_ratio_90, user_ratio_50, user_ratio_10]
+                advertiser_ratios = [retail_ratio_90, retail_ratio_50, retail_ratio_10]
+                ratio = [0.9, 0.5, 0.1]
+                for j in range(len(user_ratios)):
+                    print("Graph: ", i, ".", budget_size, '.', j)
+                    user_ratio = user_ratios[j]
+                    advertiser_ratio = advertiser_ratios[j]
+                    r = ratio[j]
+
+                    user_ratio = user_ratio.groupby(['Auction Type', 'Sex', 'Advertiser Type', 'Retailer to Economic \n'
+                                                                                               'Opportunity Ratio']).agg({'Ratio of Ads Seen By User': ['mean']}).reset_index()
+                    user_ratio.columns = ['Auction Type', 'Sex', 'Advertiser Type', 'Retailer to Economic \n'
+                                                                                    'Opportunity Ratio', 'Ratio of Ads Seen By User']
+
+                    advertiser_ratio = advertiser_ratio.groupby(['Auction Type', 'Sex', 'Advertiser Type', 'Female to Male Ratio']).agg({'Ratio of Ads Seen By User': ['mean']}).reset_index()
+                    advertiser_ratio.columns = ['Auction Type', 'Sex', 'Advertiser Type', 'Female to Male Ratio', 'Ratio of Ads Seen By User']
+
+                    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+                    sns.relplot(
+                        data=advertiser_ratio, x="Female to Male Ratio", y="Ratio of Ads Seen By User",
+                        hue="Sex", style="Advertiser Type", col="Auction Type", kind="line", ci='sd', marker='o',
+                        palette=colors
+                    )
+                    plt.gcf().text(0.9, 0.8,
+                                   "Budget: " + str(budget_size) + "\n"
+                                   "User Size: " + str(user_size[i] * advertiser_size[i]) + "\n"
+                                   "Advertiser Size: " + str(advertiser_size[i]) + "\n"
+                                   "Retailer to Economic Opportunity Ratio: " + str(retail_ratio[j] * 100) + "%\n",
+                                   fontsize=10, bbox=props)
+
+                    plt.savefig(
+                        "C:/Users/User/Desktop/Studium/Informatik/Bachelorarbeit/data_results/Graph/Revenue Plots/percentage to user ratio" + str(
+                            budget_size) + population_size[i] + "adv_ratio" + str(r) + ".jpg", bbox_inches='tight')
+                    plt.close()
+
+                    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+                    sns.relplot(
+                        data=user_ratio, x='Retailer to Economic \n'
+                                           'Opportunity Ratio',
+                        y="Ratio of Ads Seen By User", hue="Sex", style="Advertiser Type", col="Auction Type", kind="line", ci='sd', marker='o',
+                        palette=colors
+                    )
+                    plt.gcf().text(0.9, 0.8,
+                                   "Budget: " + str(budget_size) + "\n"
+                                   "User Size: " + str(user_size[i] * advertiser_size[i]) + "\n"
+                                   "Advertiser Size: " + str(advertiser_size[i]) + "\n"
+                                   "Female to Male Ratio: " + str(retail_ratio[j] * 100) + "%\n",
+                                   fontsize=10, bbox=props)
+
+                    plt.savefig(
+                        "C:/Users/User/Desktop/Studium/Informatik/Bachelorarbeit/data_results/Graph/Revenue Plots/percentage to advertiser ratio" + str(
+                            budget_size) + population_size[i] + "user_ratio" + str(r) + ".jpg", bbox_inches='tight')
+                    plt.close()
+
+                budget_size *= 100
+            i += 1
+    return
+
+
+def complete_data_frame():
+    with open("C:/Users/User/Desktop/Studium/Informatik/Bachelorarbeit/data_results/CSV/total/Data_long.csv", 'r') as data:
+        dataframe = pd.read_csv(data, index_col=0)
+        print("inserting")
+        for i in range(0, len(dataframe), 4):
+            print("take: ", i)
+            for j in range(i+1, i+4):
+                print("insert: ", j)
+                dataframe.iloc[j, 7] = dataframe.iloc[i, 7]
+                dataframe.iloc[j, 8] = dataframe.iloc[i, 8]
+                dataframe.iloc[j, 9] = dataframe.iloc[i, 9]
+                dataframe.iloc[j, 10] = dataframe.iloc[i, 10]
+                dataframe.iloc[j, 11] = dataframe.iloc[i, 11]
+                dataframe.iloc[j, 12] = dataframe.iloc[i, 12]
+                dataframe.iloc[j, 13] = dataframe.iloc[i, 13]
+                dataframe.iloc[j, 14] = dataframe.iloc[i, 14]
+                dataframe.iloc[j, 15] = dataframe.iloc[i, 15]
+                dataframe.iloc[j, 16] = dataframe.iloc[i, 16]
+            i += 4
+
+        dataframe.to_csv(
+            "C:/Users/User/Desktop/Studium/Informatik/Bachelorarbeit/data_results/CSV/total/Data_long_filled.csv")
+
+
+# draw_multiple()
+#
+
+
+
+
+draw_percentage_reach_graph()
 
