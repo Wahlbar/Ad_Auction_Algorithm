@@ -398,7 +398,7 @@ def complete_data_frame():
             "C:/Users/User/Desktop/Studium/Informatik/Bachelorarbeit/data_results/CSV/total/Data_long_filled.csv")
 
 
-# draw_multiple()
+draw_multiple()
 # draw_revenue_graph()
 # complete_data_frame()
 draw_percentage_reach_graph()
