@@ -1,7 +1,9 @@
-
-
 # TODO: Maybe put into csv later on!
-# Right now generated from the swiss population -> maybe generate from the swiss social media users?
+# TODO: Adjust the populations corresponding to social media users.
+# This class is unused right now.
+# It takes the age distribution of the swiss population to assign a users' age with the same probability as in the swiss population.
+# However the user's age is not taken into consideration during estimating the expected value per click.
+# --> Not useful.
 class Population:
     def __init__(self):
         self.age = list(range(18, 66))
