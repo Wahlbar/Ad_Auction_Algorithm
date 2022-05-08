@@ -536,7 +536,7 @@ def complete_data_frame():
 
 # Call the methods in the correct order.
 draw_multiple()
-# draw_revenue_graph()
-# complete_data_frame()
+draw_revenue_graph()
+complete_data_frame()
 draw_percentage_reach_graph()
 
